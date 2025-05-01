@@ -4725,3 +4725,14 @@ Episode 4724	Step 4366522	Time 41082.68	Epsilon 0.01	Reward 1723.0
 Episode 4725	Step 4367237	Time 41095.82	Epsilon 0.01	Reward 4834.0
 Episode 4726	Step 4367600	Time 41103.97	Epsilon 0.01	Reward 2803.0
 Episode 4727	Step 4367893	Time 41108.84	Epsilon 0.01	Reward 2790.0
+Episode 4728	Step 4368165	Time 41113.55	Epsilon 0.01	Reward 2328.0
+Episode 4729	Step 4368831	Time 41126.49	Epsilon 0.01	Reward 4499.0
+Episode 4730	Step 4369510	Time 41142.06	Epsilon 0.01	Reward 4430.0
+Episode 4731	Step 4375841	Time 41253.41	Epsilon 0.01	Reward 4606.0
+Episode 4732	Step 4376085	Time 41257.48	Epsilon 0.01	Reward 2378.0
+Episode 4733	Step 4380531	Time 41337.14	Epsilon 0.01	Reward 4147.0
+Episode 4734	Step 4383025	Time 41385.51	Epsilon 0.01	Reward 5366.0
+Episode 4735	Step 4387413	Time 41464.28	Epsilon 0.01	Reward 4169.0
+Episode 4736	Step 4387686	Time 41468.61	Epsilon 0.01	Reward 2538.0
+Episode 4737	Step 4392376	Time 41555.95	Epsilon 0.01	Reward 4684.0
+Episode 4738	Step 4395605	Time 41611.12	Epsilon 0.01	Reward 4700.0
