@@ -45,9 +45,13 @@ class Agent(object):
         self.action_space = gym.spaces.Discrete(len(COMPLEX_MOVEMENT))
         # Initialize model
         self.model = DuelingCNN(input_channels=4, n_actions=len(COMPLEX_MOVEMENT)).to(self.device)
-        # Load pretrained weights from model.pth
+        # Load pretrained weights from model.pth, prefer weights_only to avoid pickle risks
         try:
+            checkpoint = torch.load("model.pth", map_location=self.device, weights_only=True)
+        except TypeError:
+            # fallback if weights_only not supported in this torch version
             checkpoint = torch.load("model.pth", map_location=self.device)
+        try:
             self.model.load_state_dict(checkpoint)
             print("Successfully loaded model.pth")
         except Exception as e:
@@ -57,8 +61,10 @@ class Agent(object):
 
     def act(self, observation):
         # observation: numpy array with shape (4, 84, 84)
+        # Ensure positive strides by copying the array
+        obs = observation.copy()
         # Convert to torch tensor and add batch dimension
-        state = torch.as_tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
+        state = torch.tensor(obs, dtype=torch.float32, device=self.device).unsqueeze(0)
         with torch.no_grad():
             q_values = self.model(state)
             action = int(q_values.argmax(dim=1).item())
