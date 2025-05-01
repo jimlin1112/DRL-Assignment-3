@@ -1,5 +1,4 @@
 import gym
-from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -43,7 +42,7 @@ class Agent(object):
     def __init__(self):
         self.action_space = gym.spaces.Discrete(12)
         self.device = torch.device("cpu")
-        self.q_net = DuelingCNN(4, COMPLEX_MOVEMENT)
+        self.q_net = DuelingCNN(4, self.action_space)
         self.q_net.load_state_dict(torch.load("model.pth", map_location=self.device))
         self.q_net.eval()
 
