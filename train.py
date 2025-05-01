@@ -211,10 +211,18 @@ class DQNVariant:
         # Decay epsilon
         self.eps = max(self.eps_min, self.eps * self.eps_decay)
 
-# ---- Hyperparameters ----
-SEED = 42
+
+file = open("output.txt", "w")
+save_path = "model.pth"
+
+fin = open("record.txt", "r")
+for line in fin.readlines():
+    file.write(line)
+fin.close()
+
 
 # Set random seeds
+SEED = 42
 random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)
@@ -240,8 +248,6 @@ total_steps = 0
 episode = 0
 episode_reward = 0
 start_time = time.time()
-file = open("output.txt", "w")
-save_path = "model.pth"
 state = env.reset()
 
 pbar = tqdm(range(1, int(2e6) +1))
