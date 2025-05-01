@@ -218,10 +218,11 @@ class DQNVariant:
 file = open("output.txt", "w")
 save_path = "model.pth"
 
-fin = open("record.txt", "r")
-for line in fin.readlines():
-    file.write(line)
-fin.close()
+if pre_load:
+    fin = open("record.txt", "r")
+    for line in fin.readlines():
+        file.write(line)
+    fin.close()
 
 
 # Set random seeds
