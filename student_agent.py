@@ -1,12 +1,12 @@
 import gym
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
 
-# CNN with dueling architecture for image inputs.
+# Dueling CNN architecture matching train.py
 class DuelingCNN(nn.Module):
     def __init__(self, input_channels, n_actions):
-        super().__init__()
+        super(DuelingCNN, self).__init__()
         # Convolutional feature extractor
         self.conv = nn.Sequential(
             nn.Conv2d(input_channels, 32, kernel_size=8, stride=4),
@@ -17,13 +17,13 @@ class DuelingCNN(nn.Module):
             nn.ReLU(),
             nn.Flatten()
         )
-        # Compute size of conv output (should be 64*7*7 = 3136 for 84x84 input)
-        conv_output_size = 64 * 7 * 7
+        # Fully connected layer
+        conv_output_size = 64 * 7 * 7  # for 84x84 input
         self.fc = nn.Sequential(
             nn.Linear(conv_output_size, 512),
             nn.ReLU()
         )
-        # Dueling streams
+        # Dueling streams: value and advantage
         self.value_stream = nn.Linear(512, 1)
         self.advantage_stream = nn.Linear(512, n_actions)
 
@@ -32,22 +32,34 @@ class DuelingCNN(nn.Module):
         x = self.fc(x)
         value = self.value_stream(x)
         adv = self.advantage_stream(x)
-        # Combine into Q values
+        # Combine value and advantage into Q-values
         q = value + (adv - adv.mean(dim=1, keepdim=True))
         return q
 
-# Do not modify the input of the 'act' function and the '__init__' function. 
 class Agent(object):
-    """Agent that acts randomly."""
+    """Agent that loads a pretrained DQN model and acts deterministically."""
     def __init__(self):
-        self.action_space = gym.spaces.Discrete(12)
+        # Use CPU for evaluation to comply with leaderboard requirements
         self.device = torch.device("cpu")
-        self.q_net = DuelingCNN(4, self.action_space)
-        self.q_net.load_state_dict(torch.load("model.pth", map_location=self.device))
-        self.q_net.eval()
+        # Action space size matches COMPLEX_MOVEMENT
+        self.action_space = gym.spaces.Discrete(len(COMPLEX_MOVEMENT))
+        # Initialize model
+        self.model = DuelingCNN(input_channels=4, n_actions=len(COMPLEX_MOVEMENT)).to(self.device)
+        # Load pretrained weights from model.pth
+        try:
+            checkpoint = torch.load("model.pth", map_location=self.device)
+            self.model.load_state_dict(checkpoint)
+            print("Successfully loaded model.pth")
+        except Exception as e:
+            print(f"Error loading model.pth: {e}")
+        # Set model to evaluation mode
+        self.model.eval()
 
     def act(self, observation):
-        state_t = torch.as_tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
+        # observation: numpy array with shape (4, 84, 84)
+        # Convert to torch tensor and add batch dimension
+        state = torch.as_tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
         with torch.no_grad():
-            q_values = self.q_net(state_t)
-        return int(q_values.argmax(dim=1).item())
+            q_values = self.model(state)
+            action = int(q_values.argmax(dim=1).item())
+        return action

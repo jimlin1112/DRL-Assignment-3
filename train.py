@@ -143,8 +143,6 @@ class DQNVariant:
         print(self.device)
         # Q-networks
         c = state_shape[0]
-        print(action_size)
-        exit(1)
         self.q_net = DuelingCNN(c, action_size).to(self.device)
         self.target_net = DuelingCNN(c, action_size).to(self.device)
         self.target_net.load_state_dict(self.q_net.state_dict())
