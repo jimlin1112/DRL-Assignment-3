@@ -11,6 +11,7 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+pre_load = True
 
 # Replay buffer stores image frames (uint8) and other transitions.
 class ReplayBuffer:
@@ -145,6 +146,8 @@ class DQNVariant:
         c = state_shape[0]
         self.q_net = DuelingCNN(c, action_size).to(self.device)
         self.target_net = DuelingCNN(c, action_size).to(self.device)
+        if pre_load:
+            self.q_net.load_state_dict(torch.load(save_path, map_location=self.device, weights_only=True))
         self.target_net.load_state_dict(self.q_net.state_dict())
         self.target_net.eval()
         self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=lr)
@@ -157,7 +160,7 @@ class DQNVariant:
         self.update_interval = target_update_interval
         self.learn_steps = 0
         # Epsilon-greedy params
-        self.eps = 1.0
+        self.eps = 0.01
         self.eps_min = 0.01
         self.eps_decay = 0.9999
 
@@ -245,12 +248,13 @@ action_size = env.action_space.n
 agent = DQNVariant(state_shape, action_size)
 
 total_steps = 0
-episode = 0
+episode = 2473
+start_frame = 1999276
 episode_reward = 0
 start_time = time.time()
 state = env.reset()
 
-pbar = tqdm(range(1, int(2e6) +1))
+pbar = tqdm(range(start_frame+1, int(1e7)+start_frame +1))
 for total_steps in pbar:
     action = agent.get_action(state, deterministic=False)
     next_state, reward, done, info = env.step(action)

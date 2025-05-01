@@ -56,7 +56,7 @@ class Agent(object):
 
         # load trained weights from model.pth
         try:
-            ckpt = torch.load('model.pth', map_location=self.device)
+            ckpt = torch.load('model.pth', map_location=self.device, weights_only=True)
             if isinstance(ckpt, dict) and 'model' in ckpt:
                 self.model.load_state_dict(ckpt['model'])
             else:
