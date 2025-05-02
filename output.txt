@@ -8526,3 +8526,15 @@ Episode 8525	Step 8937477	Time 122730.66	Epsilon 0.01	Reward 3952.0
 Episode 8526	Step 8940145	Time 122777.37	Epsilon 0.01	Reward 4024.0
 Episode 8527	Step 8942361	Time 122817.24	Epsilon 0.01	Reward 3566.0
 Episode 8528	Step 8943229	Time 122834.93	Epsilon 0.01	Reward 5750.0
+Episode 8529	Step 8947690	Time 122914.88	Epsilon 0.01	Reward 3453.0
+Episode 8530	Step 8947953	Time 122919.21	Epsilon 0.01	Reward 2711.0
+Episode 8531	Step 8948315	Time 122925.10	Epsilon 0.01	Reward 2977.0
+Episode 8532	Step 8948950	Time 122936.84	Epsilon 0.01	Reward 5263.0
+Episode 8533	Step 8950116	Time 122958.15	Epsilon 0.01	Reward 5328.0
+Episode 8534	Step 8950649	Time 122966.65	Epsilon 0.01	Reward 3589.0
+Episode 8535	Step 8951288	Time 122980.33	Epsilon 0.01	Reward 4262.0
+Episode 8536	Step 8952868	Time 123009.37	Epsilon 0.01	Reward 5180.0
+Episode 8537	Step 8953516	Time 123023.61	Epsilon 0.01	Reward 4588.0
+Episode 8538	Step 8954017	Time 123033.88	Epsilon 0.01	Reward 4820.0
+Episode 8539	Step 8955874	Time 123067.28	Epsilon 0.01	Reward 4892.0
+Episode 8540	Step 8957639	Time 123099.49	Epsilon 0.01	Reward 5263.0
