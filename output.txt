@@ -13144,3 +13144,12 @@ Episode 13143	Step 13990112	Time 37126.10	Epsilon 0.01	Reward 6416.0
 Episode 13144	Step 13990362	Time 37130.20	Epsilon 0.01	Reward 2631.0
 Episode 13145	Step 13990598	Time 37134.16	Epsilon 0.01	Reward 2376.0
 Episode 13146	Step 13991234	Time 37146.30	Epsilon 0.01	Reward 6643.0
+Episode 13147	Step 13992419	Time 37171.77	Epsilon 0.01	Reward 5717.0
+Episode 13148	Step 13993216	Time 37189.58	Epsilon 0.01	Reward 7480.0
+Episode 13149	Step 13994083	Time 37206.87	Epsilon 0.01	Reward 5341.0
+Episode 13150	Step 13994805	Time 37224.34	Epsilon 0.01	Reward 6908.0
+Episode 13151	Step 13997192	Time 37269.15	Epsilon 0.01	Reward 5926.0
+Episode 13152	Step 13997784	Time 37282.14	Epsilon 0.01	Reward 6195.0
+Episode 13153	Step 13998415	Time 37297.92	Epsilon 0.01	Reward 5738.0
+Episode 13154	Step 13999154	Time 37312.76	Epsilon 0.01	Reward 6617.0
+Episode 13155	Step 13999973	Time 37331.83	Epsilon 0.01	Reward 6935.0
