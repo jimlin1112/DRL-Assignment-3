@@ -249,8 +249,8 @@ action_size = env.action_space.n
 agent = DQNVariant(state_shape, action_size)
 
 total_steps = 0
-episode = 2473
-start_frame = 1999276
+episode = 10898
+start_frame = 12000000
 episode_reward = 0
 start_time = time.time()
 state = env.reset()
