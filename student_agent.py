@@ -61,7 +61,7 @@ class Agent(object):
                 self.model.load_state_dict(ckpt['model'])
             else:
                 self.model.load_state_dict(ckpt)
-            print("[Agent] Loaded model.pth successfully.")
+            # print("[Agent] Loaded model.pth successfully.")
         except Exception as e:
             print(f"[Agent] Failed to load model.pth: {e}")
             print("[Agent] Using untrained network.")
