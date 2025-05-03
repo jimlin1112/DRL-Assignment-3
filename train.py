@@ -13,36 +13,117 @@ import torch.nn as nn
 import torch.nn.functional as F
 pre_load = True
 
-# Replay buffer stores image frames (uint8) and other transitions.
-class ReplayBuffer:
-    def __init__(self, capacity, state_shape):
+# SumTree data structure for storing priorities and samples
+class SumTree:
+    def __init__(self, capacity):
         self.capacity = capacity
-        self.state_shape = state_shape  # e.g. (4,84,84)
+        self.tree = np.zeros(2 * capacity - 1, dtype=np.float32)
+        self.data = np.zeros(capacity, dtype=object)
         self.ptr = 0
         self.size = 0
-        # Pre-allocate buffers for efficiency
-        self.states      = np.zeros((capacity, *state_shape), dtype=np.float32)
-        self.next_states = np.zeros((capacity, *state_shape), dtype=np.float32)
-        self.actions = np.zeros(capacity, dtype=np.int64)
-        self.rewards = np.zeros(capacity, dtype=np.float32)
-        self.dones = np.zeros(capacity, dtype=np.float32)
 
-    def add(self, state, action, reward, next_state, done):
-        self.states[self.ptr]      = state
-        self.next_states[self.ptr] = next_state
-        self.actions[self.ptr]     = action
-        self.rewards[self.ptr]     = reward
-        self.dones[self.ptr]       = 1.0 if done else 0.0
+    def add(self, priority, data):
+        idx = self.ptr + self.capacity - 1
+        self.data[self.ptr] = data
+        self.update(idx, priority)
         self.ptr = (self.ptr + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
 
-    def sample(self, batch_size):
-        idx = np.random.choice(self.size, batch_size, replace=False)
-        return (self.states[idx], self.actions[idx], self.rewards[idx],
-                self.next_states[idx], self.dones[idx])
+    def update(self, idx, priority):
+        change = priority - self.tree[idx]
+        self.tree[idx] = priority
+        # propagate the change up
+        while idx != 0:
+            idx = (idx - 1) // 2
+            self.tree[idx] += change
+
+    def get(self, s):
+        idx = 0
+        # traverse the tree to find leaf
+        while True:
+            left = 2 * idx + 1
+            right = left + 1
+            if left >= len(self.tree):
+                leaf = idx
+                break
+            if s <= self.tree[left]:
+                idx = left
+            else:
+                s -= self.tree[left]
+                idx = right
+        data_idx = leaf - self.capacity + 1
+        return leaf, self.tree[leaf], self.data[data_idx]
+
+    @property
+    def total(self):
+        return self.tree[0]
+
+
+class PrioritizedReplayBuffer:
+    def __init__(self, capacity, state_shape, alpha=0.6):
+        # alpha determines how much prioritization is used (0 = uniform)
+        self.capacity = capacity
+        self.alpha = alpha
+        self.tree = SumTree(capacity)
+        self.max_priority = 1.0
+        # Pre-allocate state and next_state arrays
+        self.state_shape = state_shape
+
+    def add(self, state, action, reward, next_state, done):
+        data = (state, action, reward, next_state, done)
+        # use max priority for new sample to ensure it gets sampled
+        priority = self.max_priority ** self.alpha
+        self.tree.add(priority, data)
+
+    def sample(self, batch_size, beta=0.4):
+        if self.tree.size < batch_size:
+            raise ValueError(f"Not enough samples to draw: {self.tree.size} < {batch_size}")
+        batch = []
+        idxs = np.zeros(batch_size, dtype=np.int32)
+        priorities = np.zeros(batch_size, dtype=np.float32)
+        segment = self.tree.total / batch_size
+
+        for i in range(batch_size):
+            a = segment * i
+            b = segment * (i + 1)
+            while True:
+                s = random.uniform(a, b)
+                leaf, p, data = self.tree.get(s)
+                data_idx = leaf - self.capacity + 1
+                # only accept if this index is within the current size
+                if data_idx < self.tree.size:
+                    break
+
+            idxs[i] = leaf
+            priorities[i] = p
+            batch.append(data)
+
+        # extract components
+        states, actions, rewards, next_states, dones = zip(*batch)
+        states = np.stack(states)
+        next_states = np.stack(next_states)
+        actions = np.array(actions)
+        rewards = np.array(rewards, dtype=np.float32)
+        dones = np.array(dones, dtype=np.float32)
+
+        # importance-sampling weights
+        total = self.tree.total
+        probs = priorities / total
+        weights = (self.tree.size * probs) ** (-beta)
+        weights /= weights.max()
+        weights = weights.astype(np.float32)
+
+        return (states, actions, rewards, next_states, dones, idxs, weights)
+
+    def update_priorities(self, idxs, errors, epsilon=1e-6):
+        # update priorities based on absolute TD errors
+        for idx, error in zip(idxs, errors):
+            p = (np.abs(error) + epsilon) ** self.alpha
+            self.tree.update(idx, p)
+            self.max_priority = max(self.max_priority, p)
 
     def __len__(self):
-        return self.size
+        return self.tree.size
 
 # CNN with dueling architecture for image inputs.
 class DuelingCNN(nn.Module):
@@ -136,7 +217,7 @@ class FrameStack(gym.Wrapper):
 
 class DQNVariant:
     def __init__(self, state_shape, action_size, buffer_capacity=10000,
-        batch_size=128, gamma=0.9, lr=0.00025, tau=5e-3, target_update_interval=10000):
+        batch_size=128, gamma=0.9, lr=0.0001, tau=5e-3, target_update_interval=10000):
         
         self.state_shape = state_shape
         self.action_size = action_size
@@ -153,7 +234,7 @@ class DQNVariant:
         self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=lr)
         self.loss_fn = F.smooth_l1_loss
         # Replay buffer
-        self.memory = ReplayBuffer(buffer_capacity, state_shape)
+        self.memory = PrioritizedReplayBuffer(buffer_capacity, state_shape)
         self.batch_size = batch_size
         self.gamma = gamma
         self.tau = tau
@@ -184,8 +265,10 @@ class DQNVariant:
     def train(self):
         if len(self.memory) < self.batch_size:
             return
+        beta = min(beta_final, beta_start + (total_steps / beta_frames) * (beta_final - beta_start))
         # Sample a batch
-        states, actions, rewards, next_states, dones = self.memory.sample(self.batch_size)
+        states, actions, rewards, next_states, dones, idxs, weights = self.memory.sample(self.batch_size, beta=beta)
+        is_weights_t = torch.as_tensor(weights, dtype=torch.float32, device=self.device).unsqueeze(1)
         states_t = torch.as_tensor(states, dtype=torch.float32, device=self.device)
         next_states_t = torch.as_tensor(next_states, dtype=torch.float32, device=self.device)
         actions_t = torch.as_tensor(actions, dtype=torch.long, device=self.device).unsqueeze(1)
@@ -199,18 +282,23 @@ class DQNVariant:
             next_q = self.target_net(next_states_t).gather(1, next_actions)
             target_q = rewards_t + self.gamma * (1.0 - dones_t) * next_q
 
-        loss = self.loss_fn(current_q, target_q)
+        td_errors = target_q - current_q
+        loss = (is_weights_t * F.smooth_l1_loss(current_q, target_q, reduction='none')).mean()
         self.optimizer.zero_grad()
         loss.backward()
         nn.utils.clip_grad_norm_(self.q_net.parameters(), max_norm=10.0)
         self.optimizer.step()
 
+        # Update sample priority
+        errors = td_errors.detach().cpu().numpy().squeeze()
+        self.memory.update_priorities(idxs, errors)
+
         # Update target network and epsilon
         self.learn_steps += 1
         if self.learn_steps % self.update_interval == 0:
             self.update_target(hard=True)
-        # else:
-        #     self.update_target(hard=False)
+        else:
+            self.update_target(hard=False)
         # Decay epsilon
         self.eps = max(self.eps_min, self.eps * self.eps_decay)
 
@@ -248,9 +336,12 @@ action_size = env.action_space.n
 
 agent = DQNVariant(state_shape, action_size)
 
+beta_start  = 0.4
+beta_frames = 1_000_000
+beta_final  = 1.0
 total_steps = 0
 episode = 10898
-start_frame = 12000000
+start_frame = 12_000_000
 episode_reward = 0
 start_time = time.time()
 state = env.reset()
