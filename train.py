@@ -217,7 +217,7 @@ class FrameStack(gym.Wrapper):
 
 class DQNVariant:
     def __init__(self, state_shape, action_size, buffer_capacity=10000,
-        batch_size=128, gamma=0.9, lr=0.0001, tau=5e-3, target_update_interval=10000):
+        batch_size=128, gamma=0.9, lr=3e-5, tau=5e-3, target_update_interval=10000):
         
         self.state_shape = state_shape
         self.action_size = action_size
