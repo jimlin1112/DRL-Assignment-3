@@ -217,7 +217,7 @@ class FrameStack(gym.Wrapper):
 
 class DQNVariant:
     def __init__(self, state_shape, action_size, buffer_capacity=10000,
-        batch_size=128, gamma=0.9, lr=3e-4, tau=5e-3, target_update_interval=10000):
+        batch_size=128, gamma=0.9, lr=1e-5, tau=5e-3, target_update_interval=10000):
         
         self.state_shape = state_shape
         self.action_size = action_size
@@ -340,8 +340,8 @@ beta_start  = 0.4
 beta_frames = 1_000_000
 beta_final  = 1.0
 total_steps = 0
-episode = 15746
-start_frame = 16362067
+episode = 17484
+start_frame = 17954772
 episode_reward = 0
 start_time = time.time()
 state = env.reset()
