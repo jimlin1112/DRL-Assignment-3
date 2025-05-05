@@ -18956,3 +18956,15 @@ Episode 18955	Step 20410113	Time 46992.58	Epsilon 0.01	Reward 5885.0
 Episode 18956	Step 20412676	Time 47039.69	Epsilon 0.01	Reward 7311.0
 Episode 18957	Step 20417069	Time 47123.18	Epsilon 0.01	Reward 7775.0
 Episode 18958	Step 20419760	Time 47174.39	Epsilon 0.01	Reward 7015.0
+Episode 18959	Step 20422336	Time 47225.44	Epsilon 0.01	Reward 7106.0
+Episode 18960	Step 20424791	Time 47273.38	Epsilon 0.01	Reward 4628.0
+Episode 18961	Step 20429243	Time 47361.82	Epsilon 0.01	Reward 7359.0
+Episode 18962	Step 20429819	Time 47375.48	Epsilon 0.01	Reward 5888.0
+Episode 18963	Step 20430302	Time 47386.99	Epsilon 0.01	Reward 5193.0
+Episode 18964	Step 20431041	Time 47403.35	Epsilon 0.01	Reward 4905.0
+Episode 18965	Step 20431573	Time 47415.06	Epsilon 0.01	Reward 5733.0
+Episode 18966	Step 20434129	Time 47468.15	Epsilon 0.01	Reward 6861.0
+Episode 18967	Step 20434889	Time 47485.14	Epsilon 0.01	Reward 7883.0
+Episode 18968	Step 20435870	Time 47505.79	Epsilon 0.01	Reward 5455.0
+Episode 18969	Step 20436467	Time 47519.00	Epsilon 0.01	Reward 6360.0
+Episode 18970	Step 20437381	Time 47537.86	Epsilon 0.01	Reward 4786.0
